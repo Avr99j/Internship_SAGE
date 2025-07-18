@@ -1,3 +1,4 @@
+
 # SAGE Web Portal
 
 This repository contains the SAGE (Sogeti AI Guide & Exchange) web portal, developed as a Capgemini/Sogeti USA Internship project. SAGE is a comprehensive platform for discovering and evaluating AI solutions across various business domains.
@@ -142,3 +143,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Capgemini/Sogeti USA for the internship opportunity
 - Project mentors and supervisors
 - Azure OpenAI team for AI capabilities
+

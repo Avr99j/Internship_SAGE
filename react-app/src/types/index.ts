@@ -4,10 +4,10 @@ export interface Agent {
   domain: string;
   subdomain: string;
   description: string;
-  rating?: number; // Made optional since it's calculated from reviews
-  comments?: number; // Made optional since it's calculated from reviews
+  rating: number;
+  comments: number;
+  trial: boolean;
   trialUrl?: string; // URL to access the trial
-  contactUrl?: string; // URL to contact the developer
   reviewsList?: Review[];
 }
 

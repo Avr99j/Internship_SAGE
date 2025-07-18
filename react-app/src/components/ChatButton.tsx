@@ -1,7 +1,5 @@
 import React from 'react';
 import { useChat } from '../hooks/useChatContext';
-import chatBubbleIcon from '../assets/chat-bubble.svg';
-import closeIcon from '../assets/close-icon.svg';
 
 interface ChatButtonProps {
   onClick: () => void;
@@ -19,10 +17,10 @@ const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen }) => {
       aria-label={isOpen ? "Close chat" : "Open chat"}
     >
       {isOpen ? (
-        <img src={closeIcon} alt="Close chat" className="chat-icon" />
+        <span className="chat-icon">×</span>
       ) : (
         <>
-          <img src={chatBubbleIcon} alt="Open chat" className="chat-icon" />
+          <span className="chat-icon">💬</span>
           {unreadCount > 0 && (
             <span className="unread-badge" aria-label={`${unreadCount} unread messages`}>
               {unreadCount > 9 ? '9+' : unreadCount}

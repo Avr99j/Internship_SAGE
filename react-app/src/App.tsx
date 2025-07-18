@@ -9,8 +9,7 @@ import AgentModal from './components/AgentModal'
 import Pagination from './components/Pagination'
 import ContactForm from './components/ContactForm'
 import ChatWidget from './components/ChatWidget'
-import ViewToggle from './components/ViewToggle'
-import { syncedAgentsData, syncAgentData } from './data/agentData'
+import { syncedAgentsData } from './data/agentData'
 import type { Agent, FilterOptions, Review } from './types'
 
 function App() {
@@ -36,9 +35,6 @@ function App() {
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(6)
-  
-  // State for view type (grid or list)
-  const [viewType, setViewType] = useState<'grid' | 'list'>('grid')
   
   // Filter agents based on search query and filters
   useEffect(() => {
@@ -68,23 +64,23 @@ function App() {
     
     // Apply trial filter
     if (filters.trial !== 'all') {
-      const hasTrialUrl = filters.trial === 'true';
-      result = result.filter(agent => Boolean(agent.trialUrl) === hasTrialUrl);
+      const isTrialAvailable = filters.trial === 'true';
+      result = result.filter(agent => agent.trial === isTrialAvailable);
     }
     
     // Apply rating filter
     if (filters.rating !== 'all') {
       const minRating = parseFloat(filters.rating);
-      result = result.filter(agent => (agent.rating || 0) >= minRating);
+      result = result.filter(agent => agent.rating >= minRating);
     }
     
     // Apply sorting
     switch (filters.sortBy) {
       case 'rating':
-        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        result.sort((a, b) => b.rating - a.rating);
         break;
       case 'comments':
-        result.sort((a, b) => (b.comments || 0) - (a.comments || 0));
+        result.sort((a, b) => b.comments - a.comments);
         break;
       case 'title':
         result.sort((a, b) => a.title.localeCompare(b.title));
@@ -112,28 +108,11 @@ function App() {
   // Handle search
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    // Scroll to agents section when search is performed
-    setTimeout(() => {
-      document.querySelector('.main')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
   };
   
   // Handle filter changes
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-  };
-  
-  // Handle clearing all filters and search
-  const handleClearAll = () => {
-    setFilters({
-      l1Capability: 'all',
-      l2Capability: 'all',
-      trial: 'all',
-      rating: 'all',
-      sortBy: 'rating'
-    });
-    setSearchQuery('');
-    setCurrentPage(1);
   };
   
   // Handle agent selection for modal
@@ -145,40 +124,42 @@ function App() {
   // Handle adding a review
   const handleAddReview = (agentId: string, review: Review) => {
     setAgents(prev => {
-      // First update the reviewsList for the specific agent
-      const updatedAgents = prev.map(agent => {
+      return prev.map(agent => {
         if (agent.id === agentId) {
           const reviewsList = agent.reviewsList ? [...agent.reviewsList, review] : [review];
           return { 
             ...agent, 
             reviewsList,
+            comments: reviewsList.length, // Set comments to actual number of reviews
+            rating: calculateNewRating(reviewsList)
           };
         }
         return agent;
       });
-      
-      // Then use syncAgentData to calculate ratings and comments
-      return syncAgentData(updatedAgents);
     });
     
     // Also update selected agent in the modal
     if (selectedAgent && selectedAgent.id === agentId) {
       const reviewsList = selectedAgent.reviewsList ? [...selectedAgent.reviewsList, review] : [review];
-      const updatedAgent = {
+      setSelectedAgent({
         ...selectedAgent,
         reviewsList,
-      };
-      
-      // Use syncAgentData to calculate rating and comments for consistency
-      const [calculatedAgent] = syncAgentData([updatedAgent]);
-      setSelectedAgent(calculatedAgent);
+        comments: reviewsList.length, // Set comments to actual number of reviews
+        rating: calculateNewRating(reviewsList)
+      });
     }
+  };
+  
+  // Calculate new rating after adding a review
+  const calculateNewRating = (reviews: Review[]) => {
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return sum / reviews.length;
   };
 
   return (
     <>
-      <Header />
-      <Hero onSearch={handleSearch} searchQuery={searchQuery} />
+      <Header onSearch={handleSearch} />
+      <Hero onSearch={handleSearch} />
       
       <main className="main">
         <Stats agents={filteredAgents} />
@@ -186,17 +167,9 @@ function App() {
         <Filters 
           filters={filters} 
           onFilterChange={handleFilterChange} 
-          onClearAll={handleClearAll}
         />
         
-        <div className="filters-view-controls">
-          <ViewToggle 
-            viewType={viewType}
-            onToggle={setViewType}
-          />
-        </div>
-        
-        <div className={`agents-container ${viewType}-view`}>
+        <div className="agents-container">
           {displayedAgents.length > 0 ? (
             displayedAgents.map(agent => (
               <AgentCard 
@@ -229,19 +202,6 @@ function App() {
         onClose={() => setIsModalOpen(false)}
         onAddReview={handleAddReview}
       />
-      
-      <footer className="page-footer">
-        <div className="footer-content">
-          <div className="footer-links">
-            <a href="#" className="footer-link">Privacy Policy</a>
-            <a href="#" className="footer-link">Terms of Service</a>
-            <a href="#" className="footer-link">About</a>
-          </div>
-          <div className="footer-copyright">
-            &copy; {new Date().getFullYear()} Sogeti. All rights reserved.
-          </div>
-        </div>
-      </footer>
       
       <ChatWidget />
     </>
