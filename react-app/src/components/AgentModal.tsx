@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Agent, Review } from '../types';
-import closeIcon from '../assets/close-icon.svg';
 
 interface AgentModalProps {
   agent: Agent | null;
@@ -10,27 +9,14 @@ interface AgentModalProps {
 }
 
 const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddReview }) => {
-  const [rating, setRating] = useState<number>(0);
+  const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState<string>('');
   const [name, setName] = useState<string>('');
-
-  // Reset form when modal is closed
-  useEffect(() => {
-    if (!isOpen) {
-      setRating(0);
-      setComment('');
-      setName('');
-    }
-  }, [isOpen]);
 
   if (!agent) return null;
 
   const formatDate = (date: string) => {
-    // Create date with explicit timezone handling to prevent date shifting
-    const [year, month, day] = date.split('-').map(num => parseInt(num));
-    const dateObj = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript Date
-    
-    return dateObj.toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -45,15 +31,9 @@ const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddRe
       return;
     }
 
-    // Create a date in local timezone
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0'); // +1 because months are 0-indexed
-    const day = String(today.getDate()).padStart(2, '0');
-    
     const newReview: Review = {
       author: name,
-      date: `${year}-${month}-${day}`, // Format: YYYY-MM-DD in local timezone
+      date: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
       rating: rating,
       comment: comment
     };
@@ -61,7 +41,7 @@ const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddRe
     onAddReview(agent.id, newReview);
     setName('');
     setComment('');
-    setRating(0);
+    setRating(5);
   };
 
   // Generate star rating display
@@ -88,33 +68,25 @@ const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddRe
       <div className="modal-content">
         <div className="modal-header">
           <h2 className="modal-title">{agent.title}</h2>
-          <button className="modal-close" onClick={onClose}>
-            <img src={closeIcon} alt="Close" className="close-icon" />
-          </button>
+          <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
         <div className="modal-body">
           <div className="modal-domain-container">
             <span className="modal-domain">{agent.domain}</span>
             <span className="modal-subdomain">{agent.subdomain}</span>
-            <span className={`modal-trial ${agent.trialUrl ? 'trial-available' : 'no-trial'}`}>
-              {agent.trialUrl ? 'Trial Available' : 'No Trial Available'}
+            <span className={`modal-trial ${agent.trial ? 'trial-available' : 'no-trial'}`}>
+              {agent.trial ? 'Trial Available' : 'No Trial Available'}
             </span>
           </div>
           
           <div className="modal-description">{agent.description}</div>
           
-          {agent.trialUrl && (
+          {agent.trial && agent.trialUrl && (
             <a 
               href={agent.trialUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="trial-button"
-              onClick={(e) => {
-                // Prevent the click from closing the modal
-                e.stopPropagation();
-                // Open in new tab using JavaScript to ensure it works
-                window.open(agent.trialUrl, '_blank', 'noopener,noreferrer');
-              }}
             >
               Try {agent.title} Now
             </a>
@@ -140,7 +112,7 @@ const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddRe
             
             <h4 className="modal-section-title">Add Your Review</h4>
             <form className="comment-form" onSubmit={handleSubmitReview}>
-              <div className="name-container">
+              <div>
                 <label htmlFor="name">Your Name</label>
                 <input 
                   type="text" 
@@ -148,11 +120,11 @@ const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddRe
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
                   required 
-                  className="name-input"
+                  className="form-control"
                 />
               </div>
               
-              <div className="rating-container">
+              <div>
                 <label htmlFor="rating">Rating</label>
                 <div className="rating-input">
                   {[5, 4, 3, 2, 1].map((star) => (
@@ -186,24 +158,7 @@ const AgentModal: React.FC<AgentModalProps> = ({ agent, isOpen, onClose, onAddRe
           </div>
         </div>
         <div className="modal-footer">
-          {agent.contactUrl ? (
-            <a 
-              href={agent.contactUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="contact-btn"
-              onClick={(e) => {
-                // Prevent the click from closing the modal
-                e.stopPropagation();
-                // Open in new tab using JavaScript to ensure it works
-                window.open(agent.contactUrl, '_blank', 'noopener,noreferrer');
-              }}
-            >
-              Contact Developer
-            </a>
-          ) : (
-            <button className="contact-btn" disabled>Contact Developer</button>
-          )}
+          <button className="contact-btn">Contact Specialist</button>
         </div>
       </div>
     </div>

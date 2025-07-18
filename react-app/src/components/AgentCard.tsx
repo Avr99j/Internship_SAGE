@@ -30,12 +30,10 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onClick }) => {
     <div className="agent-card" onClick={() => onClick(agent)}>
       <div className="agent-header">
         <div className="agent-title">{agent.title}</div>
-        <div className="agent-labels">
-          <div className="agent-domain">{agent.domain}</div>
-          {agent.subdomain && <div className="agent-subdomain">{agent.subdomain}</div>}
-          <div className={`agent-trial ${agent.trialUrl ? 'trial-available' : 'no-trial'}`}>
-            {agent.trialUrl ? 'Trial Available' : 'No Trial'}
-          </div>
+        <div className="agent-domain">{agent.domain}</div>
+        {agent.subdomain && <div className="agent-subdomain">{agent.subdomain}</div>}
+        <div className={`agent-trial ${agent.trial ? 'trial-available' : 'no-trial'}`}>
+          {agent.trial ? 'Trial Available' : 'No Trial'}
         </div>
       </div>
       <div className="agent-body">
@@ -44,9 +42,9 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onClick }) => {
       <div className="agent-footer">
         <div className="agent-rating">
           <div className="stars">
-            {renderStars(agent.rating || 0)}
+            {renderStars(agent.rating)}
           </div>
-          <div>{(agent.rating || 0).toFixed(1)}</div>
+          <div>{agent.rating.toFixed(1)}</div>
         </div>
         <div className="agent-comments">{agent.comments} reviews</div>
       </div>
