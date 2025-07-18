@@ -1,5 +1,5 @@
 import type { Agent, Review } from '../types';
-import { syncAgentData } from '../data/agentData';
+import { syncAgentComments } from '../data/agentData';
 
 /**
  * Helper function to add a new agent to the application
@@ -22,13 +22,15 @@ export function addNewAgent(
     domain: agent.domain,
     subdomain: agent.subdomain || agent.domain,
     description: agent.description || `Description for ${agent.title}`,
+    rating: agent.rating || 0,
+    comments: agent.reviewsList ? agent.reviewsList.length : 0,
     trial: agent.trial !== undefined ? agent.trial : false,
     trialUrl: agent.trialUrl, // Include trial URL if provided
     reviewsList: agent.reviewsList || []
   };
   
   // Return new array with the agent added
-  return syncAgentData([...currentAgents, newAgent]);
+  return syncAgentComments([...currentAgents, newAgent]);
 }
 
 /**
@@ -44,18 +46,18 @@ export function addReviewToAgent(
   review: Review,
   currentAgents: Agent[]
 ): Agent[] {
-  // First update the agent's reviewsList
-  const updatedAgents = currentAgents.map(agent => {
+  return currentAgents.map(agent => {
     if (agent.id === agentId) {
       const reviewsList = agent.reviewsList ? [...agent.reviewsList, review] : [review];
+      const newRating = reviewsList.reduce((acc, r) => acc + r.rating, 0) / reviewsList.length;
+      
       return {
         ...agent,
-        reviewsList
+        reviewsList,
+        comments: reviewsList.length,
+        rating: newRating
       };
     }
     return agent;
   });
-  
-  // Then use syncAgentData to recalculate ratings and comments counts
-  return syncAgentData(updatedAgents);
 }
