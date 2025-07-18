@@ -25,6 +25,7 @@ export function addNewAgent(
     trial: agent.trial !== undefined ? agent.trial : false,
     trialUrl: agent.trialUrl, // Include trial URL if provided
     reviewsList: agent.reviewsList || []
+    trial?: boolean;
   };
   
   // Return new array with the agent added
