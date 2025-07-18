@@ -25,6 +25,8 @@ The project consists of two main components:
   - Context-aware responses
   - Secure API endpoints
 
+### Database
+
 ## Getting Started
 
 ### Prerequisites
